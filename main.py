@@ -16,7 +16,6 @@ def load_data():
     df = pd.read_csv(url)
     
     # 컬럼 이름 지정 (날짜, 순위, 영화코드, 영화명, 일관객, 누적관객, 스크린수, 상영횟수)
-    # 데이터 구조에 맞게 컬럼명 정리
     df.columns = ["날짜", "순위", "영화코드", "영화명", "일관객", "누적관객", "스크린수", "상영횟수"]
     
     # 날짜 열을 진짜 날짜형(datetime)으로 변환 (YYYYMMDD 형식)
@@ -84,13 +83,51 @@ if selected_movie:
 st.divider()
 
 # ----------------------------------------------------
-# 구역 2: 추후 그래프 추가 영역 (예시/템플릿)
+# 구역 2: 상위 5개 영화의 날짜별 일관객 비교
 # ----------------------------------------------------
-st.header("📌 구역 2: (추가 예정 그래프)")
+st.header("📌 구역 2: 관객수 상위 5개 영화의 날짜별 일관객 비교")
+
+# 일관객 합계 기준 상위 5개 영화 추출
+top5_movie_names = df.groupby("영화명")["일관객"].sum().nlargest(5).index.tolist()
+top5_df = df[df["영화명"].isin(top5_movie_names)].sort_values("날짜")
+
+# Plotly 다중 선 그래프 생성 (색상으로 영화 구분)
+fig2 = px.line(
+    top5_df,
+    x="날짜",
+    y="일관객",
+    color="영화명",
+    title="기간 내 일관객 합계 Top 5 영화의 날짜별 일관객 추이",
+    labels={"날짜": "날짜", "일관객": "일관객수 (명)", "영화명": "영화명"},
+    markers=True
+)
+
+fig2.update_traces(
+    hovertemplate="<b>영화명:</b> %{fullData.name}<br><b>날짜:</b> %{x|%Y-%m-%d}<br><b>일관객수:</b> %{y:,}명<extra></extra>",
+    line=dict(width=2)
+)
+
+fig2.update_layout(
+    hovermode="x unified",
+    xaxis_title="날짜",
+    yaxis_title="일관객수 (명)",
+    legend_title="영화명 (클릭하여 켜기/끄기)",
+    margin=dict(l=20, r=20, t=50, b=20)
+)
+
+st.plotly_chart(fig2, use_container_width=True)
+
+# '이 그래프로 알 수 있는 것' 문구 영역
+st.info("💡 **이 그래프로 알 수 있는 것:** *(여기에 해석 문구를 작성하세요)*")
+
+st.divider()
+
+# ----------------------------------------------------
+# 구역 3: 추후 그래프 추가 영역 (예시/템플릿)
+# ----------------------------------------------------
+st.header("📌 구역 3: (추가 예정 그래프)")
 st.caption("앞으로 시간 차원과 관련된 다양한 시각화 그래프가 이 구역에 추가될 예정입니다.")
 
-# 추가 그래프를 위한 플레이스홀더 예시
-# st.plotly_chart(fig2, use_container_width=True)
 st.info("💡 **이 그래프로 알 수 있는 것:** *(여기에 해석 문구를 작성하세요)*")
 
 st.divider()
